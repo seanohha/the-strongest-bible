@@ -39,6 +39,28 @@ ROUTE_JACOB_CANAAN = [(32.1830, 35.6160), (32.1250, 35.5600), (32.1900, 35.6200)
 ROUTE_ESAU = [(32.1250, 35.5600), (31.3000, 35.4800), (30.3285, 35.4444)]
 
 TYPE_HEX = {"출발지": "#2563eb", "전환점": "#7c3aed", "화해": "#dc2626", "에서의 방향": "#ea580c", "멈춤": "#0891b2", "부분 순종": "#16a34a", "가야 할 목적지": "#991b1b"}
+BASEMAPS = {
+    "아주 밝은 지도(추천)": {
+        "tiles": "https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png",
+        "attr": "© OpenStreetMap contributors © CARTO",
+        "name": "아주 밝은 지도",
+    },
+    "밝은 지도": {
+        "tiles": "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+        "attr": "© OpenStreetMap contributors © CARTO",
+        "name": "밝은 지도",
+    },
+    "기본 지도": {
+        "tiles": "OpenStreetMap",
+        "attr": None,
+        "name": "기본 지도",
+    },
+    "지형 지도": {
+        "tiles": "OpenTopoMap",
+        "attr": None,
+        "name": "지형 지도",
+    },
+}
 
 
 def haversine_km(lat1, lon1, lat2, lon2):
@@ -55,18 +77,12 @@ def route_distance(points):
 
 
 def route_until_step(route, step, full_mode=True):
-    if full_mode:
-        cut_by_step = {1: 1, 2: 6, 3: 6, 4: 6, 5: 7, 6: 7, 7: 8, 8: 9, 9: 10}
-    else:
-        cut_by_step = {1: 0, 2: 1, 3: 1, 4: 1, 5: 2, 6: 2, 7: 3, 8: 4, 9: 5}
-    cut = cut_by_step.get(step, len(route))
-    return route[:cut]
+    cut_by_step = {1: 1, 2: 6, 3: 6, 4: 6, 5: 7, 6: 7, 7: 8, 8: 9, 9: 10} if full_mode else {1: 0, 2: 1, 3: 1, 4: 1, 5: 2, 6: 2, 7: 3, 8: 4, 9: 5}
+    return route[:cut_by_step.get(step, len(route))]
 
 
 def visible_location_ids(step):
-    ids = set()
-    for event in EVENTS[:step]:
-        ids.add(event["loc_id"])
+    ids = {event["loc_id"] for event in EVENTS[:step]}
     if step >= 9:
         ids.add(7)
     return ids
@@ -83,6 +99,35 @@ def make_popup(loc):
         <b>신학적 의미:</b><br>{loc['theology']}
     </div>
     """
+
+
+def add_selected_basemap(map_obj, basemap_name):
+    cfg = BASEMAPS[basemap_name]
+    if cfg["attr"]:
+        folium.TileLayer(
+            tiles=cfg["tiles"],
+            attr=cfg["attr"],
+            name=cfg["name"],
+            overlay=False,
+            control=False,
+        ).add_to(map_obj)
+    else:
+        folium.TileLayer(
+            tiles=cfg["tiles"],
+            name=cfg["name"],
+            overlay=False,
+            control=False,
+        ).add_to(map_obj)
+
+
+def add_optional_basemaps(map_obj, selected):
+    for name, cfg in BASEMAPS.items():
+        if name == selected:
+            continue
+        kwargs = {"tiles": cfg["tiles"], "name": cfg["name"], "overlay": False, "control": True, "show": False}
+        if cfg["attr"]:
+            kwargs["attr"] = cfg["attr"]
+        folium.TileLayer(**kwargs).add_to(map_obj)
 
 
 def add_label(map_obj, loc):
@@ -129,7 +174,7 @@ with st.sidebar:
     st.header("지도 설정")
     timeline_step = st.slider("시점 선택", 1, 9, 9, help="사건 순서에 따라 지도에 표시되는 경로와 위치가 달라집니다.")
     map_mode = st.radio("지도 모드", ["전체 축척: 하란–세일 포함", "가나안 확대: 얍복강–세겜–벧엘"], help="전체 축척은 하란과 세일의 실제 거리감을 보여주고, 가나안 확대는 창 32–33장의 사건을 자세히 보여줍니다.")
-    basemap = st.radio("배경 지도", ["아주 밝은 지도(추천)", "밝은 지도", "기본 지도", "지형 지도"], index=0)
+    basemap = st.radio("배경 지도", list(BASEMAPS.keys()), index=0)
     show_all_context = st.checkbox("전체 여정 배경으로 함께 보기", True)
     show_jacob_route = st.checkbox("야곱의 이동 경로", True)
     show_esau_route = st.checkbox("에서의 이동 방향(세일)", True)
@@ -156,19 +201,10 @@ with left:
     else:
         center, zoom, base_route, bounds = [32.05, 35.45], 9, ROUTE_JACOB_CANAAN, [[31.80, 35.10], [32.35, 35.75]]
 
-    if basemap in ["아주 밝은 지도(추천)", "밝은 지도"]:
-        m = folium.Map(location=center, zoom_start=zoom, tiles="CartoDB positron")
-    elif basemap == "지형 지도":
-        m = folium.Map(location=center, zoom_start=zoom, tiles="OpenTopoMap")
-    else:
-        m = folium.Map(location=center, zoom_start=zoom, tiles="OpenStreetMap")
+    m = folium.Map(location=center, zoom_start=zoom, tiles=None, prefer_canvas=True)
+    add_selected_basemap(m, basemap)
+    add_optional_basemaps(m, basemap)
 
-    if basemap == "아주 밝은 지도(추천)":
-        folium.TileLayer(tiles="https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png", attr="© OpenStreetMap contributors © CARTO", name="아주 밝은 배경", overlay=False, control=True).add_to(m)
-
-    folium.TileLayer("CartoDB positron", name="밝은 지도").add_to(m)
-    folium.TileLayer("OpenStreetMap", name="기본 지도").add_to(m)
-    folium.TileLayer("OpenTopoMap", name="지형 지도").add_to(m)
     Fullscreen().add_to(m)
     MiniMap(toggle_display=True).add_to(m)
     MeasureControl(primary_length_unit="kilometers").add_to(m)
@@ -205,7 +241,7 @@ with left:
 
     folium.LayerControl(collapsed=True).add_to(m)
     m.fit_bounds(bounds)
-    st_folium(m, width=None, height=700)
+    st_folium(m, width=None, height=700, key=f"map-{timeline_step}-{map_mode}-{basemap}-{show_all_context}-{show_jacob_route}-{show_esau_route}-{show_labels}-{show_bethel_note}-{route_width}")
 
 with right:
     st.subheader(f"⏱️ 현재 시점 {timeline_step}/9")
