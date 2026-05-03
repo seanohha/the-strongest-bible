@@ -103,14 +103,12 @@ def add_optional_basemaps(map_obj, selected):
         folium.TileLayer(**kwargs).add_to(map_obj)
 
 
-def add_label(map_obj, loc):
-    html = f"""
-    <div style="background: rgba(255,255,255,0.96); border: 2px solid {TYPE_HEX.get(loc['type'], '#333')}; border-radius: 8px; padding: 4px 7px; font-size: 13px; line-height: 1.15; white-space: nowrap; box-shadow: 0 2px 7px rgba(0,0,0,0.28);">
-        <b style="color:#111">{loc['name']}</b><br>
-        <span style="font-size:10.5px;color:#444">({loc['modern']})</span>
-    </div>
-    """
-    folium.Marker([loc["lat"], loc["lon"]], icon=folium.DivIcon(html=html)).add_to(map_obj)
+def make_tooltip(loc):
+    return folium.Tooltip(
+        f"{loc['id']}. {loc['name']} ({loc['modern']})",
+        sticky=True,
+        permanent=False,
+    )
 
 
 def add_number_marker(map_obj, loc, active=False):
@@ -118,15 +116,20 @@ def add_number_marker(map_obj, loc, active=False):
     size = 44 if active else 34
     border = 4 if active else 3
     html = f"""
-    <div style="width: {size}px; height: {size}px; border-radius: 50%; background: {color}; color: white; border: {border}px solid white; box-shadow: 0 3px 12px rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: {17 if active else 15}px;">
+    <div style="width:{size}px;height:{size}px;border-radius:50%;background:{color};color:white;border:{border}px solid white;box-shadow:0 3px 12px rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:{17 if active else 15}px;">
         {loc['id']}
     </div>
     """
     folium.Marker(
         [loc["lat"], loc["lon"]],
         popup=folium.Popup(make_popup(loc), max_width=340),
-        tooltip=f"{loc['id']}. {loc['name']} ({loc['modern']})",
-        icon=folium.DivIcon(html=html, icon_size=(size, size), icon_anchor=(size // 2, size // 2)),
+        tooltip=make_tooltip(loc),
+        icon=folium.DivIcon(
+            html=html,
+            class_name="clean-number-marker",
+            icon_size=(size, size),
+            icon_anchor=(size // 2, size // 2),
+        ),
     ).add_to(map_obj)
 
 
@@ -137,10 +140,7 @@ def add_current_event_callout(map_obj, loc, event):
         <span style="color:#d1d5db">{event['refs']}</span>
     </div>
     """
-    folium.Marker(
-        [loc["lat"] + 0.08, loc["lon"] + 0.08],
-        icon=folium.DivIcon(html=html, icon_size=(280, 70), icon_anchor=(0, 35)),
-    ).add_to(map_obj)
+    folium.Marker([loc["lat"] + 0.08, loc["lon"] + 0.08], icon=folium.DivIcon(html=html, class_name="clean-callout", icon_size=(280, 70), icon_anchor=(0, 35))).add_to(map_obj)
 
 
 st.title("🗺️ 야곱의 여정 인터랙티브 성경지도")
@@ -154,7 +154,7 @@ with st.sidebar:
     show_all_context = st.checkbox("전체 여정 배경으로 함께 보기", True)
     show_jacob_route = st.checkbox("야곱의 이동 경로", True)
     show_esau_route = st.checkbox("에서의 이동 방향(세일)", True)
-    show_labels = st.checkbox("현대 지명 라벨 표시", True)
+    show_tooltips = st.checkbox("마우스 오버 지명 표시", True)
     show_map_callout = st.checkbox("지도 위 현재 사건 설명 박스 표시", False)
     show_bethel_note = st.checkbox("벧엘: 아직 미도달 강조", True)
     route_width = st.slider("경로 선 굵기", 4, 12, 8)
@@ -207,8 +207,6 @@ with left:
         if not show_all_context and loc["id"] not in visible_ids:
             continue
         add_number_marker(m, loc, active=(loc["id"] == current_loc["id"]))
-        if show_labels:
-            add_label(m, loc)
 
     if show_map_callout:
         add_current_event_callout(m, current_loc, current_event)
@@ -219,7 +217,7 @@ with left:
 
     folium.LayerControl(collapsed=True).add_to(m)
     m.fit_bounds(bounds)
-    st_folium(m, width=None, height=700, key=f"map-{timeline_step}-{map_mode}-{basemap}-{show_all_context}-{show_jacob_route}-{show_esau_route}-{show_labels}-{show_map_callout}-{show_bethel_note}-{route_width}")
+    st_folium(m, width=None, height=700, key=f"map-{timeline_step}-{map_mode}-{basemap}-{show_all_context}-{show_jacob_route}-{show_esau_route}-{show_tooltips}-{show_map_callout}-{show_bethel_note}-{route_width}")
 
 with right:
     st.subheader(f"⏱️ 현재 시점 {timeline_step}/9")
