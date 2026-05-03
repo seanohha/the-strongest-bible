@@ -40,26 +40,10 @@ ROUTE_ESAU = [(32.1250, 35.5600), (31.3000, 35.4800), (30.3285, 35.4444)]
 
 TYPE_HEX = {"출발지": "#2563eb", "전환점": "#7c3aed", "화해": "#dc2626", "에서의 방향": "#ea580c", "멈춤": "#0891b2", "부분 순종": "#16a34a", "가야 할 목적지": "#991b1b"}
 BASEMAPS = {
-    "아주 밝은 지도(추천)": {
-        "tiles": "https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png",
-        "attr": "© OpenStreetMap contributors © CARTO",
-        "name": "아주 밝은 지도",
-    },
-    "밝은 지도": {
-        "tiles": "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-        "attr": "© OpenStreetMap contributors © CARTO",
-        "name": "밝은 지도",
-    },
-    "기본 지도": {
-        "tiles": "OpenStreetMap",
-        "attr": None,
-        "name": "기본 지도",
-    },
-    "지형 지도": {
-        "tiles": "OpenTopoMap",
-        "attr": None,
-        "name": "지형 지도",
-    },
+    "아주 밝은 지도(추천)": {"tiles": "https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png", "attr": "© OpenStreetMap contributors © CARTO", "name": "아주 밝은 지도"},
+    "밝은 지도": {"tiles": "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", "attr": "© OpenStreetMap contributors © CARTO", "name": "밝은 지도"},
+    "기본 지도": {"tiles": "OpenStreetMap", "attr": None, "name": "기본 지도"},
+    "지형 지도": {"tiles": "OpenTopoMap", "attr": None, "name": "지형 지도"},
 }
 
 
@@ -103,21 +87,10 @@ def make_popup(loc):
 
 def add_selected_basemap(map_obj, basemap_name):
     cfg = BASEMAPS[basemap_name]
+    kwargs = {"tiles": cfg["tiles"], "name": cfg["name"], "overlay": False, "control": False}
     if cfg["attr"]:
-        folium.TileLayer(
-            tiles=cfg["tiles"],
-            attr=cfg["attr"],
-            name=cfg["name"],
-            overlay=False,
-            control=False,
-        ).add_to(map_obj)
-    else:
-        folium.TileLayer(
-            tiles=cfg["tiles"],
-            name=cfg["name"],
-            overlay=False,
-            control=False,
-        ).add_to(map_obj)
+        kwargs["attr"] = cfg["attr"]
+    folium.TileLayer(**kwargs).add_to(map_obj)
 
 
 def add_optional_basemaps(map_obj, selected):
@@ -159,12 +132,15 @@ def add_number_marker(map_obj, loc, active=False):
 
 def add_current_event_callout(map_obj, loc, event):
     html = f"""
-    <div style="background:#111827; color:white; border-radius:10px; padding:8px 10px; font-size:13px; line-height:1.25; box-shadow:0 4px 14px rgba(0,0,0,.35); max-width:260px;">
+    <div style="width:260px; min-width:260px; background:#111827; color:white; border-radius:10px; padding:8px 10px; font-size:13px; line-height:1.25; box-shadow:0 4px 14px rgba(0,0,0,.35); white-space:normal;">
         <b>{event['step']}. {event['title']}</b><br>
         <span style="color:#d1d5db">{event['refs']}</span>
     </div>
     """
-    folium.Marker([loc["lat"] + 0.08, loc["lon"] + 0.08], icon=folium.DivIcon(html=html)).add_to(map_obj)
+    folium.Marker(
+        [loc["lat"] + 0.08, loc["lon"] + 0.08],
+        icon=folium.DivIcon(html=html, icon_size=(280, 70), icon_anchor=(0, 35)),
+    ).add_to(map_obj)
 
 
 st.title("🗺️ 야곱의 여정 인터랙티브 성경지도")
@@ -179,6 +155,7 @@ with st.sidebar:
     show_jacob_route = st.checkbox("야곱의 이동 경로", True)
     show_esau_route = st.checkbox("에서의 이동 방향(세일)", True)
     show_labels = st.checkbox("현대 지명 라벨 표시", True)
+    show_map_callout = st.checkbox("지도 위 현재 사건 설명 박스 표시", False)
     show_bethel_note = st.checkbox("벧엘: 아직 미도달 강조", True)
     route_width = st.slider("경로 선 굵기", 4, 12, 8)
 
@@ -233,7 +210,8 @@ with left:
         if show_labels:
             add_label(m, loc)
 
-    add_current_event_callout(m, current_loc, current_event)
+    if show_map_callout:
+        add_current_event_callout(m, current_loc, current_event)
 
     if show_bethel_note and timeline_step >= 8:
         folium.CircleMarker(location=[31.9410, 35.2330], radius=24, color="#ffffff", weight=5, fill=False).add_to(m)
@@ -241,7 +219,7 @@ with left:
 
     folium.LayerControl(collapsed=True).add_to(m)
     m.fit_bounds(bounds)
-    st_folium(m, width=None, height=700, key=f"map-{timeline_step}-{map_mode}-{basemap}-{show_all_context}-{show_jacob_route}-{show_esau_route}-{show_labels}-{show_bethel_note}-{route_width}")
+    st_folium(m, width=None, height=700, key=f"map-{timeline_step}-{map_mode}-{basemap}-{show_all_context}-{show_jacob_route}-{show_esau_route}-{show_labels}-{show_map_callout}-{show_bethel_note}-{route_width}")
 
 with right:
     st.subheader(f"⏱️ 현재 시점 {timeline_step}/9")
