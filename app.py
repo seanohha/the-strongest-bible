@@ -9,20 +9,25 @@ import json
 from pathlib import Path
 
 st.set_page_config(page_title="인터랙티브 성경지도", page_icon="🗺️", layout="wide")
+
 # =========================
-# 방문자 수 시스템
+# 방문자 수 시스템 (GitHub JSON 저장)
 # =========================
 
 VISITOR_FILE = Path("visitor_count.json")
 
+# 파일 없으면 생성
 if not VISITOR_FILE.exists():
     with open(VISITOR_FILE, "w", encoding="utf-8") as f:
         json.dump({"count": 0}, f)
 
+# 방문자 수 읽기
 with open(VISITOR_FILE, "r", encoding="utf-8") as f:
     visitor_data = json.load(f)
 
+# 세션당 1회 증가
 if "visitor_incremented" not in st.session_state:
+
     visitor_data["count"] += 1
 
     with open(VISITOR_FILE, "w", encoding="utf-8") as f:
