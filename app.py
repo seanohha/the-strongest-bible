@@ -5,8 +5,32 @@ import pandas as pd
 import streamlit as st
 from folium.plugins import AntPath, Fullscreen, MeasureControl, MiniMap
 from streamlit_folium import st_folium
+import json
+from pathlib import Path
 
 st.set_page_config(page_title="인터랙티브 성경지도", page_icon="🗺️", layout="wide")
+# =========================
+# 방문자 수 시스템
+# =========================
+
+VISITOR_FILE = Path("visitor_count.json")
+
+if not VISITOR_FILE.exists():
+    with open(VISITOR_FILE, "w", encoding="utf-8") as f:
+        json.dump({"count": 0}, f)
+
+with open(VISITOR_FILE, "r", encoding="utf-8") as f:
+    visitor_data = json.load(f)
+
+if "visitor_incremented" not in st.session_state:
+    visitor_data["count"] += 1
+
+    with open(VISITOR_FILE, "w", encoding="utf-8") as f:
+        json.dump(visitor_data, f)
+
+    st.session_state["visitor_incremented"] = True
+
+VISITOR_COUNT = visitor_data["count"]
 
 TYPE_HEX = {
     "출발지": "#2563eb", "전환점": "#7c3aed", "화해": "#dc2626", "에서의 방향": "#ea580c",
@@ -204,8 +228,20 @@ def run_study(study_key, basemap, route_width, show_context):
 
 
 with st.sidebar:
+    st.markdown("## 📖 최신 질문지")
+st.info("창세기 37장 — 요셉과 피 묻은 채색옷")
+
+st.markdown("## 👥 방문자 수")
+st.success(f"{VISITOR_COUNT:,} 명")
     st.header("본문 선택")
-    study = st.selectbox("나눔지/본문", ["야곱의 귀환과 화해 (창 33장)", "요셉과 피 묻은 채색옷 (창 37장)"])
+    study = st.selectbox(
+    "나눔지/본문",
+    [
+        "야곱의 귀환과 화해 (창 33장)",
+        "요셉과 피 묻은 채색옷 (창 37장)"
+    ],
+    index=1
+)
     basemap = st.radio("배경 지도", list(BASEMAPS.keys()), index=0)
     show_context = st.checkbox("전체 여정 배경으로 함께 보기", True)
     route_width = st.slider("경로 선 굵기", 4, 12, 8)
