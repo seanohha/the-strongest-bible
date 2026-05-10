@@ -229,19 +229,21 @@ def run_study(study_key, basemap, route_width, show_context):
 
 with st.sidebar:
     st.markdown("## 📖 최신 질문지")
-st.info("창세기 37장 — 요셉과 피 묻은 채색옷")
+    st.info("창세기 37장 — 요셉과 피 묻은 채색옷")
 
-st.markdown("## 👥 방문자 수")
-st.success(f"{VISITOR_COUNT:,} 명")
+    st.markdown("## 👥 방문자 수")
+    st.success(f"{VISITOR_COUNT:,} 명")
+    
     st.header("본문 선택")
+    
     study = st.selectbox(
-    "나눔지/본문",
-    [
-        "야곱의 귀환과 화해 (창 33장)",
-        "요셉과 피 묻은 채색옷 (창 37장)"
-    ],
-    index=1
-)
+        "나눔지/본문",
+        [
+            "야곱의 귀환과 화해 (창 33장)",
+            "요셉과 피 묻은 채색옷 (창 37장)"
+        ],
+        index=1
+    )
     basemap = st.radio("배경 지도", list(BASEMAPS.keys()), index=0)
     show_context = st.checkbox("전체 여정 배경으로 함께 보기", True)
     route_width = st.slider("경로 선 굵기", 4, 12, 8)
