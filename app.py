@@ -211,6 +211,43 @@ def run_study(study_key, basemap, route_width, show_context):
     elif study_key == "하나님의 마음 — 요셉의 용서와 화해 (창 45장)":
         st.title("🕊️ 하나님의 마음 — 창세기 45장")
         st.write("테스트")
+    
+        locs = [
+            {
+                "id": 1,
+                "name": "애굽",
+                "modern": "Egypt",
+                "lat": 30.0444,
+                "lon": 31.2357,
+                "type": "섭리",
+                "refs": "창 45:1–15",
+                "summary": "요셉이 형들에게 자신을 밝히고 용서한 장소입니다.",
+                "theology": "하나님의 섭리와 용서가 드러나는 장면입니다.",
+            }
+        ]
+    
+        events = [
+            {
+                "step": 1,
+                "loc_id": 1,
+                "title": "나는 요셉이라",
+                "refs": "창 45:1–15",
+                "text": "요셉이 형들에게 자신의 정체를 밝히고 하나님의 섭리를 고백합니다.",
+                "verse": "나를 이리로 보낸 이는 당신들이 아니요 하나님이시라.",
+                "question": "내 삶의 고난 속에서 하나님의 섭리를 볼 수 있습니까?",
+                "emotion": "용서와 화해",
+                "christ": "요셉의 용서는 그리스도의 구원을 예표합니다.",
+            }
+        ]
+    
+        current = events[0]
+    
+        m = folium.Map(
+            location=[30.0444, 31.2357],
+            zoom_start=7,
+            tiles="CartoDB positron"
+        )
+    
         return m, events, locs, current
 
     st.title("🧥 피로 적신 채색옷 — 요셉 사건 지도")
