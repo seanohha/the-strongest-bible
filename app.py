@@ -366,7 +366,7 @@ def run_study(study_key, basemap, route_width, show_context):
 
 with st.sidebar:
     st.markdown("## 📖 최신 질문지")
-    st.info("창세기 37장 — 요셉과 피 묻은 채색옷")
+    st.info("창세기 45장 — 하나님의 마음/요셉의 용서와 화해")
 
     st.markdown("## 👥 방문자 수")
     st.success(f"{VISITOR_COUNT:,} 명")
