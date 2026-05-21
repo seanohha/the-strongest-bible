@@ -209,43 +209,134 @@ def run_study(study_key, basemap, route_width, show_context):
         m = draw_map(center, zoom, bounds, basemap, locs, current_loc, show_context, visible_ids, route, active, trade, route_width, show_bethel and step >= 8)
         return m, events, locs, current
     elif study_key == "하나님의 마음 — 요셉의 용서와 화해 (창 45장)":
-        st.title("🕊️ 하나님의 마음 — 창세기 45장")
-        st.write("테스트")
     
-        locs = [
+        st.title("🕊️ 하나님의 마음 — 요셉의 용서와 화해")
+        st.caption("창세기 45:1–15 | 용서 · 섭리 · 생명 보존 · 그리스도 예표")
+    
+        GEN45_LOCATIONS = [
             {
                 "id": 1,
+                "name": "가나안",
+                "modern": "Hebron / Canaan",
+                "lat": 31.5326,
+                "lon": 35.0998,
+                "type": "출발지",
+                "refs": "창 42–44",
+                "summary": "야곱의 가족이 기근 속에 있는 장소",
+                "theology": "기근은 회복의 시작이 되었습니다."
+            },
+            {
+                "id": 2,
                 "name": "애굽",
                 "modern": "Egypt",
                 "lat": 30.0444,
                 "lon": 31.2357,
                 "type": "섭리",
                 "refs": "창 45:1–15",
-                "summary": "요셉이 형들에게 자신을 밝히고 용서한 장소입니다.",
-                "theology": "하나님의 섭리와 용서가 드러나는 장면입니다.",
-            }
+                "summary": "요셉이 형들을 용서한 장소",
+                "theology": "인간의 악을 하나님이 구원으로 바꾸셨습니다."
+            },
+            {
+                "id": 3,
+                "name": "고센",
+                "modern": "Goshen",
+                "lat": 30.58,
+                "lon": 31.50,
+                "type": "화해",
+                "refs": "창 45:10",
+                "summary": "가족을 초청한 생명 보존의 장소",
+                "theology": "언약 공동체를 보호하시는 하나님"
+            },
         ]
     
-        events = [
+        GEN45_EVENTS = [
             {
                 "step": 1,
                 "loc_id": 1,
+                "title": "기근과 애굽행",
+                "refs": "창 42–44",
+                "text": "기근 때문에 형들이 애굽으로 내려갑니다.",
+                "verse": "기근 속에서 하나님이 일하십니다.",
+                "question": "위기가 하나님께 가는 통로가 된 적이 있습니까?",
+                "emotion": "두려움",
+                "christ": "결핍은 참 생명 되신 그리스도께 이끕니다."
+            },
+            {
+                "step": 2,
+                "loc_id": 2,
                 "title": "나는 요셉이라",
-                "refs": "창 45:1–15",
-                "text": "요셉이 형들에게 자신의 정체를 밝히고 하나님의 섭리를 고백합니다.",
-                "verse": "나를 이리로 보낸 이는 당신들이 아니요 하나님이시라.",
-                "question": "내 삶의 고난 속에서 하나님의 섭리를 볼 수 있습니까?",
-                "emotion": "용서와 화해",
-                "christ": "요셉의 용서는 그리스도의 구원을 예표합니다.",
-            }
+                "refs": "창 45:3",
+                "text": "요셉이 자신의 정체를 밝힙니다.",
+                "verse": "나는 요셉이라.",
+                "question": "죄가 드러날 때 은혜 앞으로 나아갑니까?",
+                "emotion": "충격",
+                "christ": "십자가 앞에서 죄가 드러납니다."
+            },
+            {
+                "step": 3,
+                "loc_id": 2,
+                "title": "하나님의 섭리",
+                "refs": "창 45:5–8",
+                "text": "하나님이 생명을 구원하려 먼저 보내셨다고 고백합니다.",
+                "verse": "당신들이 아니요 하나님이시라.",
+                "question": "고난 속 하나님의 뜻을 보고 있습니까?",
+                "emotion": "용서",
+                "christ": "십자가는 악을 구원으로 바꾸신 사건입니다."
+            },
+            {
+                "step": 4,
+                "loc_id": 3,
+                "title": "고센으로 초청",
+                "refs": "창 45:10",
+                "text": "요셉이 가족 전체를 초청합니다.",
+                "verse": "고센 땅에 거하소서.",
+                "question": "나는 누군가를 살리는 삶을 살고 있습니까?",
+                "emotion": "회복",
+                "christ": "그리스도는 자기 백성을 품으십니다."
+            },
         ]
     
-        current = events[0]
+        GEN45_ROUTE = [
+            (31.5326, 35.0998),
+            (30.0444, 31.2357),
+            (30.58, 31.50),
+        ]
     
-        m = folium.Map(
-            location=[30.0444, 31.2357],
-            zoom_start=7,
-            tiles="CartoDB positron"
+        step = st.sidebar.slider(
+            "시점 선택",
+            1,
+            len(GEN45_EVENTS),
+            len(GEN45_EVENTS)
+        )
+    
+        events = GEN45_EVENTS
+        locs = GEN45_LOCATIONS
+    
+        current = events[step - 1]
+    
+        current_loc = next(
+            l for l in locs
+            if l["id"] == current["loc_id"]
+        )
+    
+        visible_ids = {
+            e["loc_id"]
+            for e in events[:step]
+        }
+    
+        m = draw_map(
+            center=[30.8, 32.5],
+            zoom=6,
+            bounds=[[29.7, 30.7], [32.0, 35.5]],
+            basemap=basemap,
+            locations=locs,
+            current_loc=current_loc,
+            show_context=show_context,
+            visible_ids=visible_ids,
+            base_route=GEN45_ROUTE,
+            active_route=GEN45_ROUTE[:step + 1],
+            trade_route=None,
+            route_width=route_width,
         )
     
         return m, events, locs, current
