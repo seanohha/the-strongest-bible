@@ -418,25 +418,49 @@ with right:
     st.dataframe(pd.DataFrame(locs)[["id", "name", "modern", "type", "refs"]], hide_index=True, use_container_width=True)
 
 st.divider()
-if study.startswith("요셉"):
+st.divider()
+
+if study == "하나님의 마음 — 요셉의 용서와 화해 (창 45장)":
     c1, c2, c3 = st.columns(3)
+
+    with c1:
+        st.markdown("### 🧎 유다의 변화")
+        st.write("과거에는 요셉을 팔던 유다가 이제는 베냐민을 위해 자신을 대신 내어놓으려 합니다.")
+
+    with c2:
+        st.markdown("### 🕊️ 요셉의 용서")
+        st.write("요셉은 형들의 죄를 부정하지 않지만, 그 죄보다 크신 하나님의 섭리를 바라봅니다.")
+
+    with c3:
+        st.markdown("### 🌾 생명 보존")
+        st.write("하나님은 요셉을 먼저 보내셔서 야곱의 가족과 언약의 후손을 보존하십니다.")
+
+elif study == "요셉과 피 묻은 채색옷 (창 37장)":
+    c1, c2, c3 = st.columns(3)
+
     with c1:
         st.markdown("### 💔 감정 흐름")
         st.write("편애 → 시기 → 미움 → 폭력 → 거짓 → 애통")
+
     with c2:
         st.markdown("### 🟢 섭리 흐름")
         st.write("구덩이와 애굽행은 실패처럼 보이지만, 장차 많은 생명을 살리는 길이 됩니다.")
+
     with c3:
         st.markdown("### ✝️ 그리스도 예표")
         st.write("요셉은 미움받고 팔리고 낮아지지만, 훗날 구원의 통로가 됩니다.")
+
 else:
     c1, c2, c3 = st.columns(3)
+
     with c1:
         st.markdown("### 얍복강")
         st.write("하나님과 씨름하며 야곱이 깨어지는 자리입니다.")
+
     with c2:
         st.markdown("### 에서의 얼굴")
         st.write("화해는 하나님의 은혜의 결과입니다.")
+
     with c3:
         st.markdown("### 벧엘")
         st.write("하나님을 만난 자리이자 다시 돌아가야 할 자리입니다.")
