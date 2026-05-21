@@ -208,6 +208,10 @@ def run_study(study_key, basemap, route_width, show_context):
         visible_ids = {e["loc_id"] for e in events[:step]}
         m = draw_map(center, zoom, bounds, basemap, locs, current_loc, show_context, visible_ids, route, active, trade, route_width, show_bethel and step >= 8)
         return m, events, locs, current
+    elif study_key == "하나님의 마음 — 요셉의 용서와 화해 (창 45장)":
+        st.title("🕊️ 하나님의 마음 — 창세기 45장")
+        st.write("테스트")
+        return m, events, locs, current
 
     st.title("🧥 피로 적신 채색옷 — 요셉 사건 지도")
     st.caption("창세기 37:18–36 | 지리 + 감정 + 섭리 + 그리스도 예표")
@@ -245,10 +249,12 @@ with st.sidebar:
         "나눔지/본문",
         [
             "야곱의 귀환과 화해 (창 33장)",
-            "요셉과 피 묻은 채색옷 (창 37장)"
+            "요셉과 피 묻은 채색옷 (창 37장)",
+            "하나님의 마음 — 요셉의 용서와 화해 (창 45장)"
         ],
-        index=1
+        index=2
     )
+    
     basemap = st.radio("배경 지도", list(BASEMAPS.keys()), index=0)
     show_context = st.checkbox("전체 여정 배경으로 함께 보기", True)
     route_width = st.slider("경로 선 굵기", 4, 12, 8)
